@@ -43,12 +43,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "TwitchArchive\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "TwitchArchive\\Tests\\": "tests/"
         }
     },
     "replace": {

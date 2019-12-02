@@ -17,7 +17,7 @@
  * along with this program. If not, see <https://gnu.org/licenses/>
  */
 
-namespace App;
+namespace TwitchArchive;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
