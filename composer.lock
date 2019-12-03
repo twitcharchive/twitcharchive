@@ -1,20 +1,20 @@
 {
-    "_readme": [
-        "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
-        "This file is @generated automatically"
-    ],
-    "content-hash": "f0aa134c748f7bb4398f0b93f0f19bb9",
-    "packages": [
-        {
-            "name": "doctrine/annotations",
-            "version": "v1.8.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/doctrine/annotations.git",
-                "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc"
-            },
-            "dist": {
+	"_readme": [
+		"This file locks the dependencies of your project to a known state",
+		"Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+		"This file is @generated automatically"
+	],
+	"content-hash": "67c1c2876dff699f5e129799fe35084a",
+	"packages": [
+		{
+			"name": "doctrine/annotations",
+			"version": "v1.8.0",
+			"source": {
+				"type": "git",
+				"url": "https://github.com/doctrine/annotations.git",
+				"reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc"
+			},
+			"dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/doctrine/annotations/zipball/904dca4eb10715b92569fbcd79e201d5c349b6bc",
                 "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc",
