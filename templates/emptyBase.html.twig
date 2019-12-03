@@ -1,9 +1,21 @@
+{% if globals is defined %}
+	{% set jsBundle = globals.jsBundleName %}
+	{% set cssBundle = globals.cssBundleName %}
+{% endif %}
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="UTF-8">
 	<title>{% block title %}Welcome!{% endblock %}</title>
 	{% block stylesheets %}{% endblock %}
+
+	{% if jsBundle is defined and jsBundle %}
+		<script src="/build/{{ jsBundle }}" type="text/javascript"></script>
+	{% endif %}
+
+	{% if cssBundle is defined and cssBundle %}
+		<link href="/build/{{ cssBundle }}" type="text/css" rel="stylesheet"/>
+	{% endif %}
 </head>
 <body>
 {% block body %}{% endblock %}
