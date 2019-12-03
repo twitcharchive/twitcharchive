@@ -17,5 +17,7 @@
  */
 
 import "../scss/index.scss";
+import "jquery";
+import "bootstrap";
 
 console.log("Bundle loaded.");
