@@ -83,6 +83,11 @@ class TwitchUser {
 	 */
 	private $time;
 
+	/**
+	 * @ORM\OneToOne(targetEntity="TwitchArchive\Entity\TwitchUserTokenData", mappedBy="user", cascade={"persist", "remove"})
+	 */
+	private $twitchUserTokenData;
+
 	public function getId(): ?int {
 		return $this->id;
 	}
@@ -183,6 +188,21 @@ class TwitchUser {
 
 	public function setTime(DateTimeInterface $time): self {
 		$this->time = $time;
+
+		return $this;
+	}
+
+	public function getTwitchUserTokenData(): ?TwitchUserTokenData {
+		return $this->twitchUserTokenData;
+	}
+
+	public function setTwitchUserTokenData(TwitchUserTokenData $twitchUserTokenData): self {
+		$this->twitchUserTokenData = $twitchUserTokenData;
+
+		// set the owning side of the relation if necessary
+		if ($twitchUserTokenData->getUser() !== $this) {
+			$twitchUserTokenData->setUser($this);
+		}
 
 		return $this;
 	}
