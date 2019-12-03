@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>{% block title %}Welcome!{% endblock %}</title>
-	{% block stylesheets %}{% endblock %}
-</head>
-<body>
-{% block body %}{% endblock %}
-{% block javascripts %}{% endblock %}
-</body>
-</html>
+{% extends "emptyBase.html.twig" %}
+
+{% block body %}
+	{% block content %}
+	{% endblock %}
+{% endblock %}
