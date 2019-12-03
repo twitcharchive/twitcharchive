@@ -16,7 +16,17 @@
  * along with this program. If not, see <https://gnu.org/licenses/>
  */
 
-@import "variables";
-@import "../variables";
-@import "~bootstrap/scss/bootstrap";
-@import "bootswatch";
+$grid-breakpoints: (
+		xs: 0,
+		sm: 676px,
+		md: 868px,
+		lg: 1092px,
+		xl: 1500px
+);
+
+$container-max-widths: (
+		sm: 620px,
+		md: 820px,
+		lg: 1060px,
+		xl: 1440px
+);
