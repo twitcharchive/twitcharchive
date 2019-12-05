@@ -28,7 +28,6 @@ use Doctrine\ORM\Mapping as ORM;
 class TwitchUser {
 	/**
 	 * @ORM\Id()
-	 * @ORM\GeneratedValue()
 	 * @ORM\Column(type="string", length=24)
 	 */
 	private $id;
@@ -88,8 +87,14 @@ class TwitchUser {
 	 */
 	private $twitchUserTokenData;
 
-	public function getId(): ?int {
+	public function getId(): ?string {
 		return $this->id;
+	}
+
+	public function setId(?string $id): self {
+		$this->id = $id;
+
+		return $this;
 	}
 
 	public function getLogin(): ?string {

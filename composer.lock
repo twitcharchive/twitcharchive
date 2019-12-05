@@ -4,7 +4,7 @@
 		"Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
 		"This file is @generated automatically"
 	],
-	"content-hash": "67c1c2876dff699f5e129799fe35084a",
+	"content-hash": "8bcf9e2f2630822af5ae5d876834c6ba",
 	"packages": [
 		{
 			"name": "doctrine/annotations",
@@ -15,16 +15,16 @@
 				"reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc"
 			},
 			"dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/904dca4eb10715b92569fbcd79e201d5c349b6bc",
-                "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/lexer": "1.*",
-                "php": "^7.1"
-            },
-            "require-dev": {
+				"type": "zip",
+				"url": "https://api.github.com/repos/doctrine/annotations/zipball/904dca4eb10715b92569fbcd79e201d5c349b6bc",
+				"reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc",
+				"shasum": ""
+			},
+			"require": {
+				"doctrine/lexer": "1.*",
+				"php": "^7.1"
+			},
+			"require-dev": {
                 "doctrine/cache": "1.*",
                 "phpunit/phpunit": "^7.5"
             },
@@ -6730,9 +6730,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.2.5",
-        "ext-ctype": "*",
-        "ext-iconv": "*"
+	    "php": "^7.2.5",
+	    "ext-ctype": "*",
+	    "ext-curl": "^7.2",
+	    "ext-iconv": "*",
+	    "ext-json": "^1.6"
     },
     "platform-dev": []
 }
