@@ -139,10 +139,53 @@ class TwitchAuthService {
 	}
 
 	/**
+	 * Refresh an access token if necessary.
+	 *
+	 * @param TwitchUserTokenData $authData
+	 * @return TwitchUserTokenData
+	 * @throws ClientExceptionInterface
+	 * @throws DecodingExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws TransportExceptionInterface
+	 * @throws Exception
+	 */
+	public function refreshToken(TwitchUserTokenData $authData): TwitchUserTokenData {
+		if ($authData->isExpired() === false) return $authData;
+
+		$client = HttpClient::create();
+		$response = $client->request("POST", "https://id.twitch.tv/oauth2/token?client_id=" . $authData->getClientId() . "&client_secret=" . $authData->getClientSecret() . "&refresh_token=" . $authData->getRefreshToken() . "&grant_type=refresh_token");
+
+		$data = $response->toArray(true);
+
+		if (isset($data["access_token"]) && isset($data["refresh_token"]) && isset($data["expires_in"])) {
+			$accessToken = $data["access_token"];
+			$refreshToken = $data["refresh_token"];
+			$expiresIn = $data["expires_in"];
+
+			$expiry = new DateTime("now");
+			$expiry->add(new DateInterval("PT" . $expiresIn . "S"));
+
+			$authData->setAccessToken($accessToken)
+				->setRefreshToken($refreshToken)
+				->setExpiresAt($expiry);
+
+			$this->entityManager->persist($authData);
+			$this->entityManager->flush();
+		}
+
+		return $authData;
+	}
+
+	/**
 	 * Gets the next TwitchUserTokenData to use from the database.
 	 *
 	 * @return TwitchUserTokenData|null
-	 * @throws Exception
+	 * @throws ClientExceptionInterface
+	 * @throws DecodingExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws TransportExceptionInterface
 	 */
 	public function getNextAuthDetails(): ?TwitchUserTokenData {
 		/**
@@ -157,7 +200,7 @@ class TwitchAuthService {
 
 			$result->setLastInvocation(new DateTime("now"));
 
-			// TODO: Refresh
+			$this->refreshToken($result);
 
 			$this->entityManager->persist($result);
 			$this->entityManager->flush();

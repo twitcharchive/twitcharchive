@@ -19,6 +19,7 @@
 
 namespace TwitchArchive\Entity;
 
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -136,6 +137,10 @@ class TwitchUserTokenData {
 		$this->expiresAt = $expiresAt;
 
 		return $this;
+	}
+
+	public function isExpired(): bool {
+		return is_null($this->expiresAt) || new DateTime("now") >= $this->expiresAt;
 	}
 
 	public function getLastInvocation(): ?DateTimeInterface {
