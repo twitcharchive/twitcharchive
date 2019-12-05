@@ -73,9 +73,9 @@ class EntityBuilderService {
 			->setDisplayName($displayName)
 			->setType($type === "" ? null : $type)
 			->setBroadcasterType($broadcasterType === "" ? null : $broadcasterType)
-			->setDescription($description)
-			->setProfileImage($profileImageURL)
-			->setOfflineImage($offlineImageURL)
+			->setDescription($description === "" ? null : $description)
+			->setProfileImage($profileImageURL === "" ? null : $profileImageURL)
+			->setOfflineImage($offlineImageURL === "" ? null : $offlineImageURL)
 			->setViewCount($viewCount);
 
 		$this->entityManager->persist($twitchUser);
