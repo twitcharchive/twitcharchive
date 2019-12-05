@@ -19,6 +19,7 @@
 
 namespace TwitchArchive\Controller;
 
+use DateTime;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -29,9 +30,12 @@ use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use TwitchArchive\Service\HelixService;
 use TwitchArchive\Service\TwitchAuthService;
 use TwitchArchive\Service\TwitchConstantsService;
+use function count;
 use function implode;
+use function is_null;
 use function urlencode;
 
 class LoginController extends AbstractController {
@@ -62,6 +66,7 @@ class LoginController extends AbstractController {
 	 * @param Request $request
 	 * @param LoggerInterface $logger
 	 * @param TwitchAuthService $authService
+	 * @param HelixService $helixService
 	 * @return RedirectResponse
 	 * @throws ClientExceptionInterface
 	 * @throws DecodingExceptionInterface
@@ -69,16 +74,51 @@ class LoginController extends AbstractController {
 	 * @throws ServerExceptionInterface
 	 * @throws TransportExceptionInterface
 	 */
-	public function callbackAction(Request $request, LoggerInterface $logger, TwitchAuthService $authService) {
-		$constantsService = $authService->getConstantsService();
-
+	public function callbackAction(Request $request, LoggerInterface $logger, TwitchAuthService $authService, HelixService $helixService) {
 		if ($request->query->has("code")) {
 			$code = $request->query->get("code");
 			$authData = $authService->exchangeCode($code);
 
-			$logger->info("Auth data retrieved.", [
-				"authData" => $authData
-			]);
+			if ($authData) {
+				$accessToken = $authData->getAccessToken();
+				$refreshToken = $authData->getRefreshToken();
+				$expiry = $authData->getExpiresAt();
+				$clientId = $authData->getClientId();
+				$clientSecret = $authData->getClientSecret();
+				$entityManager = $helixService->getEntityManager();
+
+				$users = $helixService->getUsers($authData);
+				if ($users && count($users) > 0) {
+					$twitchUser = $users[0];
+					if (!is_null($twitchUser->getTwitchUserTokenData())) {
+						$authData = $twitchUser->getTwitchUserTokenData()
+							->setAccessToken($accessToken);
+					} else {
+						$authData->setUser($twitchUser);
+					}
+
+					$authData->setRefreshToken($refreshToken)
+						->setLastInvocation(new DateTime("now"))
+						->setClientId($clientId)
+						->setClientSecret($clientSecret)
+						->setExpiresAt($expiry);
+
+					$entityManager->persist($authData);
+					$entityManager->flush();
+
+					$logger->info("Auth data saved.", [
+						"authData" => $authData
+					]);
+				} else {
+					$logger->error("Failed to exchange code: Could not identify user.", [
+						"users" => $users
+					]);
+				}
+
+				$logger->info("Auth data retrieved.", [
+					"authData" => $authData
+				]);
+			}
 		} else {
 			$logger->error("No code passed");
 		}

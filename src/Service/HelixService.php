@@ -29,9 +29,13 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use TwitchArchive\Cache\CacheHandler;
 use TwitchArchive\Entity\TwitchUser;
 use TwitchArchive\Entity\TwitchUserTokenData;
+use function count;
 use function is_null;
+use function is_numeric;
+use function strtolower;
 
 class HelixService {
 	/**
@@ -55,17 +59,60 @@ class HelixService {
 	private $entityBuilderService;
 
 	/**
+	 * @var TwitchAuthService $authService
+	 */
+	private $authService;
+
+	/**
 	 * HelixService constructor.
 	 * @param EntityManagerInterface $entityManager
 	 * @param LoggerInterface $logger
 	 * @param TwitchConstantsService $constantsService
 	 * @param EntityBuilderService $entityBuilderService
+	 * @param TwitchAuthService $authService
 	 */
-	public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, TwitchConstantsService $constantsService, EntityBuilderService $entityBuilderService) {
+	public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, TwitchConstantsService $constantsService, EntityBuilderService $entityBuilderService, TwitchAuthService $authService) {
 		$this->entityManager = $entityManager;
 		$this->logger = $logger;
 		$this->constantsService = $constantsService;
 		$this->entityBuilderService = $entityBuilderService;
+		$this->authService = $authService;
+	}
+
+	/**
+	 * Gets a user from either their username or ID.
+	 *
+	 * @param string $query
+	 * @return TwitchUser|null
+	 */
+	public function getUser(string $query): ?TwitchUser {
+		$n = "twitchUserId_" . strtolower($query);
+		$userRepository = $this->entityManager->getRepository(TwitchUser::class);
+
+		if (CacheHandler::existsInCache($n)) {
+			return $userRepository->findOneBy(["id" => CacheHandler::getFromCache($n)]);
+		}
+
+		$authData = $this->authService->getNextAuthDetails();
+		try {
+			$users = $this->getUsers($authData, is_numeric($query) ? $query : null, $query);
+
+			if ($users && count($users) > 0) {
+				$user = $users[0];
+
+				$time = 10 * 60;
+				CacheHandler::setToCache("twitchUserId_" . strtolower($user->getLogin()), $user->getId(), $time);
+				CacheHandler::setToCache("twitchUserId_" . $user->getId(), $user->getId(), $time);
+
+				return $user;
+			}
+		} catch (Exception $e) {
+			$this->logger->error("An error occurred.", [
+				"exception" => $e
+			]);
+		}
+
+		return null;
 	}
 
 	/**
@@ -128,15 +175,18 @@ class HelixService {
 	 * @return HttpClientInterface
 	 */
 	public function getClient(?TwitchUserTokenData $auth = null): HttpClientInterface {
-		$options = [
-			"headers" => [
-				"User-Agent" => "TwitchArchive.net (https://gitlab.com/Gigadrive/twitcharchive/twitcharchive)"
-			]
+		$headers = [
+			"User-Agent" => "TwitchArchive.net (https://gitlab.com/Gigadrive/twitcharchive/twitcharchive)"
 		];
 
 		if (!is_null($auth)) {
-			$options["auth_bearer"] = $auth->getAccessToken();
+			// https://dev.twitch.tv/docs/authentication#sending-user-access-and-app-access-tokens
+			$headers["Authorization"] = "Bearer " . $auth->getAccessToken();
 		}
+
+		$options = [
+			"headers" => $headers
+		];
 
 		return HttpClient::createForBaseUri($this->constantsService->getAPIBaseURL(), $options);
 	}

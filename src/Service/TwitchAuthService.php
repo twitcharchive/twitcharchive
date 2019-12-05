@@ -50,22 +50,15 @@ class TwitchAuthService {
 	private $constantsService;
 
 	/**
-	 * @var HelixService $helixService
-	 */
-	private $helixService;
-
-	/**
 	 * TwitchAuthService constructor.
 	 * @param EntityManagerInterface $entityManager
 	 * @param LoggerInterface $logger
 	 * @param TwitchConstantsService $constantsService
-	 * @param HelixService $helixService
 	 */
-	public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, TwitchConstantsService $constantsService, HelixService $helixService) {
+	public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, TwitchConstantsService $constantsService) {
 		$this->entityManager = $entityManager;
 		$this->logger = $logger;
 		$this->constantsService = $constantsService;
-		$this->helixService = $helixService;
 	}
 
 	/**
@@ -94,40 +87,16 @@ class TwitchAuthService {
 				$refreshToken = $data["refresh_token"];
 				$expiresIn = $data["expires_in"];
 
-				$authData = (new TwitchUserTokenData())->setAccessToken($accessToken)->setTime(new DateTime("now"));
+				$expiry = new DateTime("now");
+				$expiry->add(new DateInterval("PT" . $expiresIn . "S"));
 
-				$users = $this->helixService->getUsers($authData);
-				if ($users && count($users) > 0) {
-					$twitchUser = $users[0];
-					if (!is_null($twitchUser->getTwitchUserTokenData())) {
-						$authData = $twitchUser->getTwitchUserTokenData()
-							->setAccessToken($accessToken);
-					} else {
-						$authData->setUser($twitchUser);
-					}
-
-					$expiry = new DateTime("now");
-					$expiry->add(new DateInterval("PT" . $expiresIn . "S"));
-
-					$authData->setRefreshToken($refreshToken)
-						->setLastInvocation(new DateTime("now"))
-						->setClientId($clientId)
-						->setClientSecret($clientSecret)
-						->setExpiresAt($expiry);
-
-					$this->entityManager->persist($authData);
-					$this->entityManager->flush();
-
-					$this->logger->info("Auth data saved.", [
-						"authData" => $authData
-					]);
-
-					return $authData;
-				} else {
-					$this->logger->error("Failed to exchange code: Could not identify user.", [
-						"users" => $users
-					]);
-				}
+				return (new TwitchUserTokenData())
+					->setAccessToken($accessToken)
+					->setTime(new DateTime("now"))
+					->setRefreshToken($refreshToken)
+					->setExpiresAt($expiry)
+					->setClientId($clientId)
+					->setClientSecret($clientSecret);
 			} else {
 				$this->logger->error("Failed to exchange code: Invalid response.");
 			}
@@ -189,24 +158,24 @@ class TwitchAuthService {
 	 */
 	public function getNextAuthDetails(): ?TwitchUserTokenData {
 		/**
-		 * @var TwitchUserTokenData[] $data
+		 * @var TwitchUserTokenData $data
 		 */
-		$data = $this->entityManager->getRepository(TwitchUserTokenData::class)->findOneBy([], [
-			"lastInvocation" => "ASC"
-		], 1);
+		$data = $this->entityManager->getRepository(TwitchUserTokenData::class)->createQueryBuilder("t")
+			->orderBy("t.lastInvocation", "ASC")
+			->setMaxResults(1)
+			->getQuery()
+			->getOneOrNullResult();
 
-		if (count($data) > 0) {
-			$result = $data[0];
+		if ($data) {
+			$data->setLastInvocation(new DateTime("now"));
 
-			$result->setLastInvocation(new DateTime("now"));
+			$this->refreshToken($data);
 
-			$this->refreshToken($result);
-
-			$this->entityManager->persist($result);
+			$this->entityManager->persist($data);
 			$this->entityManager->flush();
 		}
 
-		return null;
+		return $data;
 	}
 
 	/**
