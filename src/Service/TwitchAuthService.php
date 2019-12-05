@@ -124,7 +124,9 @@ class TwitchAuthService {
 
 					return $authData;
 				} else {
-					$this->logger->error("Failed to exchange code: Could not identify user.");
+					$this->logger->error("Failed to exchange code: Could not identify user.", [
+						"users" => $users
+					]);
 				}
 			} else {
 				$this->logger->error("Failed to exchange code: Invalid response.");

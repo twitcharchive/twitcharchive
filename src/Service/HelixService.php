@@ -90,7 +90,7 @@ class HelixService {
 		$client = $this->getClient($auth);
 
 		try {
-			$response = $client->request("GET", "/users", [
+			$response = $client->request("GET", "/helix/users", [
 				"query" => $params
 			])->toArray(true);
 
@@ -110,8 +110,11 @@ class HelixService {
 				}
 
 				return $results;
+			} else {
+				$this->logger->error("Data not found", ["response" => $response]);
 			}
 		} catch (Exception $e) {
+			$this->logger->error("An error occurred.", ["exception" => $e]);
 			return null;
 		}
 
@@ -126,7 +129,9 @@ class HelixService {
 	 */
 	public function getClient(?TwitchUserTokenData $auth = null): HttpClientInterface {
 		$options = [
-			"User-Agent" => "TwitchArchive.net (https://gitlab.com/Gigadrive/twitcharchive/twitcharchive)"
+			"headers" => [
+				"User-Agent" => "TwitchArchive.net (https://gitlab.com/Gigadrive/twitcharchive/twitcharchive)"
+			]
 		];
 
 		if (!is_null($auth)) {

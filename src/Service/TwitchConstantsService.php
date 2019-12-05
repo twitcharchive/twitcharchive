@@ -19,6 +19,8 @@
 
 namespace TwitchArchive\Service;
 
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 class TwitchConstantsService {
 	/**
 	 * @var string $clientId
@@ -40,11 +42,11 @@ class TwitchConstantsService {
 	 */
 	private $apiBaseURL;
 
-	public function __construct() {
+	public function __construct(UrlGeneratorInterface $urlGenerator) {
 		$this->clientId = $_ENV["TWITCH_CLIENT_ID"];
 		$this->clientSecret = $_ENV["TWITCH_CLIENT_SECRET"];
-		$this->redirectURL = ""; // TODO
-		$this->apiBaseURL = "https://api.twitch.tv/helix";
+		$this->redirectURL = $urlGenerator->generate("twitcharchive_login_callback", [], UrlGeneratorInterface::ABSOLUTE_URL);
+		$this->apiBaseURL = "https://api.twitch.tv";
 	}
 
 	/**
