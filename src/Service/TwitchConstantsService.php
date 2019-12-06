@@ -42,11 +42,17 @@ class TwitchConstantsService {
 	 */
 	private $apiBaseURL;
 
+	/**
+	 * @var string $tmiBaseURL
+	 */
+	private $tmiBaseURL;
+
 	public function __construct(UrlGeneratorInterface $urlGenerator) {
 		$this->clientId = $_ENV["TWITCH_CLIENT_ID"];
 		$this->clientSecret = $_ENV["TWITCH_CLIENT_SECRET"];
 		$this->redirectURL = $urlGenerator->generate("twitcharchive_login_callback", [], UrlGeneratorInterface::ABSOLUTE_URL);
 		$this->apiBaseURL = "https://api.twitch.tv";
+		$this->tmiBaseURL = "https://tmi.twitch.tv";
 	}
 
 	/**
@@ -75,5 +81,12 @@ class TwitchConstantsService {
 	 */
 	public function getAPIBaseURL(): string {
 		return $this->apiBaseURL;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTMIBaseURL(): string {
+		return $this->tmiBaseURL;
 	}
 }
