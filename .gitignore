@@ -4,6 +4,7 @@
 /.env.local.php
 /.env.*.local
 /public/bundles/
+/public/build/
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
@@ -258,10 +259,6 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
-.env.test
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
@@ -270,9 +267,6 @@ typings/
 
 # nuxt.js build output
 .nuxt
-
-# react / gatsby
-public/
 
 # vuepress build output
 .vuepress/dist
