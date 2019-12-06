@@ -84,6 +84,11 @@ class HelixService {
 	 *
 	 * @param string $query
 	 * @return TwitchUser|null
+	 * @throws ClientExceptionInterface
+	 * @throws DecodingExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws TransportExceptionInterface
 	 */
 	public function getUser(string $query): ?TwitchUser {
 		$n = "twitchUserId_" . strtolower($query);
